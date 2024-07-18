@@ -1,12 +1,25 @@
 from rest_framework import serializers
 from watchlist_app.models import Movie
 
+
+def name_length(value):
+  if len(value) < 2:
+    raise serializers.ValidationError("Name is too short!")
+  else:
+    return(value)
+
+
 class MovieSerializer(serializers.Serializer):
     #add in fieldtype after serializers
     #everthing will be mapped using serializer according to our models 
-    id = serializers.IntegerField(read_only=True) #read_only=True is used to access the id only
-    name = serializers.CharField()
+    id = serializers.IntegerField(read_only=True) 
+    #read_only=True is used to access the id only
+    
+    name = serializers.CharField(validators=[name_length])
+    #direct validator on the serializer field
+    
     description = serializers.CharField(style={'type': 'textarea'})
+    
     active = serializers.BooleanField()
     
     #for POST request - to create data
@@ -24,3 +37,20 @@ class MovieSerializer(serializers.Serializer):
         
         instance.save()
         return instance
+    
+    # # OBJECT LEVEL VALIDATION
+    def validate(self, data):
+      if data['name'] == data['description']:
+        raise serializers.ValidationError("Name and Description cannot be same")
+      else:
+        return data
+    
+    
+    # # FIELD LEVEL VALIDATION
+    # def validate_name(self, value): 
+    #   #for field level validation, the title/name of the field needs to be added to validate_
+    #   #the value parameter holds the value of the field type
+    #     if len(value) < 2:
+    #       raise serializers.ValidationError("Name is too short")
+    #     else:
+    #       return(value)
