@@ -20,13 +20,13 @@ def movie_list(request):
         return Response(serializer.data)
     
     elif request.method == 'POST':
-        #since its a POST req, we are getting data from user, we will use serializer, get data from user and SAVE it.
+        #since its a POST req, we are getting data from user, we will use serializer, get data from user and '''SAVE''' it.
         serializer = MovieSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -34,7 +34,14 @@ def movie_list(request):
 
 def movie_detail(request, pk): #getting a specific object by passing a pk
     if request.method == 'GET':
-        movie = Movie.objects.get(pk=pk) #passing pk=pk as we are getting a specific item
+        
+        # check if pk exists or not through try/except block and send error msg depending on it. Otherwise move to serializer
+        try:
+            movie = Movie.objects.get(pk=pk) #passing pk=pk as we are getting a specific item
+        except Movie.DoesNotExist:
+            # sending response in the form of json dictionary
+            return Response({'Error' : 'Movie not found'}, status=status.HTTP_404_NOT_FOUND)
+        
         serializer = MovieSerializer(movie)
         return Response(serializer.data)
     
@@ -45,7 +52,7 @@ def movie_detail(request, pk): #getting a specific object by passing a pk
             serializer.save()
             return Response(serializer.data)
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'DELETE':
         movie = Movie.objects.get(pk=pk) #passing pk=pk as we are DELETING a specific item
