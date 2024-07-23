@@ -1,18 +1,21 @@
 from rest_framework import serializers
-from watchlist_app.models import Watchlist, StreamPlatform
+from watchlist_app.models import Watchlist, StreamPlatform, Reviews
+
+
+# # Hyperlinked Model serializer class - similiar to Model serializer class except uses hyperlinks to represent relationships instead of pk
+class ReviewSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Reviews
+    fields = '__all__'
+
 
 
 # # Model serializer class - default fields are automatically populated, defualt '.create()' & '.update()' implementation methods are provaided
 
-
-class StreamPlatformSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = StreamPlatform
-    fields = "__all__"
-
-
-
 class WatchlistSerializer(serializers.ModelSerializer):
+  #Nested serializer. field name needs to match related_name in models
+  reviews = ReviewSerializer(many=True, read_only=True)
+  
   class Meta:
     model = Watchlist
     fields = "__all__"
@@ -39,8 +42,27 @@ class WatchlistSerializer(serializers.ModelSerializer):
       raise serializers.ValidationError("Name is too short")
     else:
       return(value)
+    
+    
   
-
+class StreamPlatformSerializer(serializers.ModelSerializer):
+  # Nested serializer. field name needs to be the exact same as the 'related_name in models.py'
+  watchlist = WatchlistSerializer(many=True, read_only=True)  
+  #one streaming platform can have many medias.
+  #needs to be placed under the serializer being used here
+  
+  class Meta:
+    model = StreamPlatform
+    fields = "__all__"
+  
+  #watchlist = serializers.StringRelatedField(many=True)
+  #another option for nested serializer realtionship.utilize our models and return __str__
+  #other options include PKrelatedfield, HyperlinkedIdentityField-to access object URL like ID/desc etc, HyperlinkedRelatedField
+  #watchlist = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='')
+  #we also need to pass 'context={'request':request}' when initilizing serializer in views.py
+  
+    
+    
 
 # def name_length(value):
 #   if len(value) < 2:
