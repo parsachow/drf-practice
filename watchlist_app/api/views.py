@@ -1,12 +1,41 @@
 #from rest_framework.decorators import api_view #used for function based view
 from rest_framework.views import APIView #used for CBV
-
+from rest_framework import generics
+from rest_framework import mixins
 from rest_framework import status
 from rest_framework.response import Response
-from watchlist_app.models import Watchlist, StreamPlatform
-from watchlist_app.api.serializers import WatchlistSerializer, StreamPlatformSerializer
+
+from watchlist_app.models import Watchlist, StreamPlatform, Reviews
+from watchlist_app.api.serializers import WatchlistSerializer, StreamPlatformSerializer, ReviewSerializer
+
 
 # # Create your views here.
+
+# # Concrete CBV 
+
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Reviews.objects.all()
+    serializer_class = ReviewSerializer
+    
+
+# # Mixins - helps provide basic view behaviors without defining them in detail. We define a queryset along with the method we need.
+
+class ReviewList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView): #genericApiView will always be at the end after all the mixins
+    queryset = Reviews.objects.all()
+    serializer_class = ReviewSerializer
+    
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+# class ReviewDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
+#     queryset = Reviews.objects.all()
+#     serializer_class = ReviewSerializer
+    
+#     def get(self, request, *args, **kwargs):
+#         return self.retrieve(request, *args, **kwargs)
 
 # # CBVs
 
