@@ -1,12 +1,14 @@
 from rest_framework import serializers
-from watchlist_app.models import Watchlist, StreamPlatform, Reviews
+from watchlist_app.models import Watchlist, StreamPlatform, Review
 
 
 # # Hyperlinked Model serializer class - similiar to Model serializer class except uses hyperlinks to represent relationships instead of pk
 class ReviewSerializer(serializers.ModelSerializer):
+  
   class Meta:
-    model = Reviews
-    fields = '__all__'
+    model = Review
+    exclude = ['watchlist']
+    # fields = "__all__"
 
 
 

@@ -5,7 +5,7 @@ from rest_framework import mixins
 from rest_framework import status
 from rest_framework.response import Response
 
-from watchlist_app.models import Watchlist, StreamPlatform, Reviews
+from watchlist_app.models import Watchlist, StreamPlatform, Review
 from watchlist_app.api.serializers import WatchlistSerializer, StreamPlatformSerializer, ReviewSerializer
 
 
@@ -13,25 +13,45 @@ from watchlist_app.api.serializers import WatchlistSerializer, StreamPlatformSer
 
 # # Concrete CBV 
 
-class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Reviews.objects.all()
+class ReviewList(generics.ListAPIView):
     serializer_class = ReviewSerializer
     
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        return Review.objects.filter(watchlist=pk) #filtering object according to the movie we want
+
+class ReviewCreate(generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+    
+    def perform_create(self, serializer):
+        pk = self.kwargs.get('pk')
+        media = Watchlist.objects.get(pk=pk)
+        serializer.save(watchlist=media)
+        
+        # return super().perform_create(serializer)
+        
+# class ReviewCreate(APIView):
+    
+        
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
 
 # # Mixins - helps provide basic view behaviors without defining them in detail. We define a queryset along with the method we need.
 
-class ReviewList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView): #genericApiView will always be at the end after all the mixins
-    queryset = Reviews.objects.all()
-    serializer_class = ReviewSerializer
+# class ReviewList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView): #genericApiView will always be at the end after all the mixins
+#     queryset = Review.objects.all()
+#     serializer_class = ReviewSerializer
     
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request, *args, **kwargs)
     
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+#     def post(self, request, *args, **kwargs):
+#         return self.create(request, *args, **kwargs)
 
 # class ReviewDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
-#     queryset = Reviews.objects.all()
+#     queryset = Review.objects.all()
 #     serializer_class = ReviewSerializer
     
 #     def get(self, request, *args, **kwargs):
@@ -78,9 +98,7 @@ class StreamPlatformDetails(APIView):
         platform.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         
-            
-            
-
+                
 class WatchlistAV(APIView):
     def get(self, request): #pass in request as the 2nd parameter in CBV
         medialist = Watchlist.objects.all() #get all medias
@@ -158,28 +176,28 @@ class WatchlistDetail(APIView):
 # #PUT/DELETE Req can only be performed on individual items. PATCH req will only update specific fields on an item not the whole thing like PUT. 
 
 # def movie_detail(request, pk): #getting a specific object by passing a pk
-#     if request.method == 'GET':
+    # if request.method == 'GET':
         
-#         # check if pk exists or not through try/except block and send error msg depending on it. Otherwise move to serializer
-#         try:
-#             movie = Movie.objects.get(pk=pk) #passing pk=pk as we are getting a specific item
-#         except Movie.DoesNotExist:
-#             # sending response in the form of json dictionary
-#             return Response({'Error' : 'Movie not found'}, status=status.HTTP_404_NOT_FOUND)
+    #     # check if pk exists or not through try/except block and send error msg depending on it. Otherwise move to serializer
+    #     try:
+    #         movie = Movie.objects.get(pk=pk) #passing pk=pk as we are getting a specific item
+    #     except Movie.DoesNotExist:
+    #         # sending response in the form of json dictionary
+    #         return Response({'Error' : 'Movie not found'}, status=status.HTTP_404_NOT_FOUND)
         
-#         serializer = MovieSerializer(movie)
-#         return Response(serializer.data)
+    #     serializer = MovieSerializer(movie)
+    #     return Response(serializer.data)
     
-#     elif request.method == 'PUT':
-#         movie = Movie.objects.get(pk=pk) #passing pk=pk as we are UPDATING a specific item
-#         serializer = MovieSerializer(movie, data=request.data) #pass movie in serializer so it updates that specific pk
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # elif request.method == 'PUT':
+    #     movie = Movie.objects.get(pk=pk) #passing pk=pk as we are UPDATING a specific item
+    #     serializer = MovieSerializer(movie, data=request.data) #pass movie in serializer so it updates that specific pk
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-#     elif request.method == 'DELETE':
-#         movie = Movie.objects.get(pk=pk) #passing pk=pk as we are DELETING a specific item
-#         movie.delete() #regular quearyset, no serialization involved
-#         return Response(status=status.HTTP_204_NO_CONTENT)
+    # elif request.method == 'DELETE':
+    #     movie = Movie.objects.get(pk=pk) #passing pk=pk as we are DELETING a specific item
+    #     movie.delete() #regular quearyset, no serialization involved
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
