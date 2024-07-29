@@ -12,7 +12,7 @@ urlpatterns = [
     # path('<int:pk>/', movie_detail, name='movie-detail'),
     
     path('list/', WatchlistAV.as_view(), name='media-list'),
-    path('list/<int:pk>/', WatchlistDetail.as_view(), name='media-detail'),
+    path('<int:pk>/', WatchlistDetail.as_view(), name='media-detail'),
     
     #for simple 'get' requests for all/individual objects we can use router and viewsets and it will get/create List as well as get individual element
     path('', include(router.urls)),
@@ -24,7 +24,7 @@ urlpatterns = [
     # path('reviews/<int:pk>/', ReviewDetail.as_view(), name='review-detail'),
     
     #for custom requirements, better to go with url patterns below and generic views
-    path('list/<int:pk>/review-create/', ReviewCreate.as_view(), name='review-create'), 
-    path('list/<int:pk>/review/', ReviewList.as_view(), name='review-list'), 
-    path('list/review/<int:pk>/', ReviewDetail.as_view(), name='review-detail')
+    path('<int:pk>/review-create/', ReviewCreate.as_view(), name='review-create'), 
+    path('<int:pk>/reviews/', ReviewList.as_view(), name='review-list'), 
+    path('review/<int:pk>/', ReviewDetail.as_view(), name='review-detail')
 ]

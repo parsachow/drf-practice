@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 
 from django.shortcuts import get_object_or_404
 
-from watchlist_app.api.permissions import AdminOrReadOnly
+from watchlist_app.api.permissions import AdminOrReadOnly, ReviewUserOrReadOnly
 from watchlist_app.models import Watchlist, StreamPlatform, Review
 from watchlist_app.api.serializers import WatchlistSerializer, StreamPlatformSerializer, ReviewSerializer
 
@@ -73,14 +73,21 @@ class ReviewCreate(generics.CreateAPIView):
         return Review.objects.all()
     
     def perform_create(self, serializer):
-        pk = self.kwargs.get('pk')
+        pk = self.kwargs.get('pk') 
         media = Watchlist.objects.get(pk=pk)
         
         user = self.request.user
         review_queryset = Review.objects.filter(watchlist=media, review_user=user) #filtering through 2 criterias(media and user)to see if user already left review in this particular media
-        
         if review_queryset.exists():
             raise ValidationError("Oops you already left a review!")
+        
+        if media.num_of_reviewer == 0:
+            media.avg_rating = serializer.validated_data['rating']
+        else:
+            media.avg_rating = (media.avg_rating + serializer.validated_data['rating']) /2
+        
+        media.num_of_reviewer = media.num_of_reviewer +1
+        media.save() #save the instance
         
         # if we want to add any other funtionality then we add them above, before calling serializer.save
         serializer.save(watchlist=media, review_user=user)
@@ -91,7 +98,7 @@ class ReviewCreate(generics.CreateAPIView):
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [AdminOrReadOnly]
+    permission_classes = [ReviewUserOrReadOnly]
 
 
 # # Mixins - helps provide basic view behaviors without defining them in detail. We define a queryset along with the method we need.

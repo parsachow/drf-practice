@@ -19,6 +19,8 @@ class Watchlist(models.Model):
     description = models.TextField(max_length=300)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
+    avg_rating = models.FloatField(default=0)
+    num_of_reviewer = models.IntegerField(default=0)
     # 1 platform can have many medias, so 1:M relationship, so add FK
     platform = models.ForeignKey(StreamPlatform, on_delete=models.CASCADE, related_name='watchlist') 
     
