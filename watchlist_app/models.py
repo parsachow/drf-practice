@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth.models import User
 
 
 
@@ -25,6 +26,7 @@ class Watchlist(models.Model):
         return self.title
 
 class Review(models.Model):
+    review_user = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     review_desc = models.TextField(max_length=300, null=True)
     created = models.DateTimeField(auto_now_add=True)

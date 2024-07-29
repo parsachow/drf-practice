@@ -4,6 +4,7 @@ from watchlist_app.models import Watchlist, StreamPlatform, Review
 
 # # Hyperlinked Model serializer class - similiar to Model serializer class except uses hyperlinks to represent relationships instead of pk
 class ReviewSerializer(serializers.ModelSerializer):
+  review_user = serializers.StringRelatedField(read_only=True)
   
   class Meta:
     model = Review
