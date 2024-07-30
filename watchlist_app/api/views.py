@@ -1,5 +1,5 @@
-#from rest_framework.decorators import api_view #used for function based view
-from rest_framework.views import APIView #used for CBV
+from rest_framework.decorators import api_view 
+from rest_framework.views import APIView 
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework import status
@@ -228,7 +228,7 @@ class WatchlistDetail(APIView):
 #         return Response(serializer.data)
     
 #     elif request.method == 'POST':
-#         #since its a POST req, we are getting data from user, we will use serializer, get data from user and '''SAVE''' it.
+#         #since its a POST req, we are getting data from user, we will use serializer, get data from user, pass data into serializer and '''SAVE''' it.
 #         serializer = MovieSerializer(data=request.data)
 #         if serializer.is_valid():
 #             serializer.save()
