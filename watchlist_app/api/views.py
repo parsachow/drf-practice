@@ -1,13 +1,17 @@
 from rest_framework.decorators import api_view 
 from rest_framework.views import APIView 
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
+from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import viewsets
-from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
+from rest_framework import filters
+
 
 from django.shortcuts import get_object_or_404
 
@@ -18,6 +22,7 @@ from watchlist_app.api.throtlling import ReviewCreateThrottle, ReviewListThrottl
 
 
 # # Create your views here.
+#django-filter pkg only works on Generic views
 
 # # Model Viewset
 
@@ -67,14 +72,19 @@ class UserReview(generics.ListAPIView):
         # return Review.objects.filter(review_user__username=username) #filtering against URL. Bc review_user is a Foreign Key in the Review models, we need to pass 1 dunder after review_user to get inside the field and get the specific attribute. if it was not a FK, then we could directly use - review_user = username / rating = username etc
         
         username = self.request.query_params.get('username', None) # using query params to filter through username
+        #query params only match with exactly same values
         return Review.objects.filter(review_user__username=username) 
         
-
+        
 class ReviewList(generics.ListAPIView):
     serializer_class = ReviewSerializer
     # object level permissions
     # permission_classes = [IsAuthenticatedOrReadOnly]
+    
     throttle_classes = [ReviewListThrottle, AnonRateThrottle] #throttles are counted ALL together
+    
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['review_user__username', 'rating'] #as review_user is a FK, we need to access the username like shown above instead of directly accessing it like 'rating'
     
     def get_queryset(self): #overriding queryset to get a specific item
         pk = self.kwargs['pk']
@@ -184,6 +194,18 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
 #         platform.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
         
+                
+class WatchListFilterTest(generics.ListAPIView):
+    queryset = Watchlist.objects.all()
+    
+    serializer_class = WatchlistSerializer
+    
+    # filter_backends = [DjangoFilterBackend] #good for working with specific values like rating, exact matches only as using params
+    # filterset_fields = ['title', 'platform__name']
+    
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'platform__name'] 
+
                 
 class WatchlistAV(APIView):
     permission_classes = [AdminOrReadOnly]

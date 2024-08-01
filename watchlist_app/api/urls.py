@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 # from watchlist_app.api.views import movie_list, movie_detail
-from watchlist_app.api.views import UserReview, ReviewCreate, ReviewDetail, ReviewList, WatchlistAV, WatchlistDetail, StreamPlatformVS
+from watchlist_app.api.views import WatchListFilterTest, UserReview, ReviewCreate, ReviewDetail, ReviewList, WatchlistAV, WatchlistDetail, StreamPlatformVS
 
 
 router = DefaultRouter()
@@ -13,6 +13,8 @@ urlpatterns = [
     
     path('list/', WatchlistAV.as_view(), name='media-list'),
     path('<int:pk>/', WatchlistDetail.as_view(), name='media-detail'),
+    path('searchlist/', WatchListFilterTest.as_view(), name='watch-list'),
+    
     
     #for simple 'get' requests for all/individual objects we can use router and viewsets and it will get/create List as well as get individual element
     path('', include(router.urls)),
