@@ -7,12 +7,14 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
 
 from django.shortcuts import get_object_or_404
 
 from watchlist_app.api.permissions import AdminOrReadOnly, ReviewUserOrReadOnly
 from watchlist_app.models import Watchlist, StreamPlatform, Review
 from watchlist_app.api.serializers import WatchlistSerializer, StreamPlatformSerializer, ReviewSerializer
+from watchlist_app.api.throtlling import ReviewCreateThrottle, ReviewListThrottle
 
 
 # # Create your views here.
@@ -24,6 +26,7 @@ from watchlist_app.api.serializers import WatchlistSerializer, StreamPlatformSer
 class StreamPlatformVS(viewsets.ModelViewSet):
     queryset = StreamPlatform.objects.all()
     serializer_class = StreamPlatformSerializer
+    permission_classes = [AdminOrReadOnly]
 
 
 # # Viewset
@@ -52,22 +55,36 @@ class StreamPlatformVS(viewsets.ModelViewSet):
 #         platform = StreamPlatform.objects.get(pk=pk)
 #         platform.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
-        
     
 
 # # Concrete CBV 
 
-class ReviewList(generics.ListAPIView):
+class UserReview(generics.ListAPIView):
     serializer_class = ReviewSerializer
-    #object level permissions
-    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get_queryset(self):
+        # username = self.kwargs['username'] # directly mapping value of username
+        # return Review.objects.filter(review_user__username=username) #filtering against URL. Bc review_user is a Foreign Key in the Review models, we need to pass 1 dunder after review_user to get inside the field and get the specific attribute. if it was not a FK, then we could directly use - review_user = username / rating = username etc
+        
+        username = self.request.query_params.get('username', None) # using query params to filter through username
+        return Review.objects.filter(review_user__username=username) 
+        
+
+class ReviewList(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+    # object level permissions
+    # permission_classes = [IsAuthenticatedOrReadOnly]
+    throttle_classes = [ReviewListThrottle, AnonRateThrottle] #throttles are counted ALL together
+    
+    def get_queryset(self): #overriding queryset to get a specific item
         pk = self.kwargs['pk']
         return Review.objects.filter(watchlist=pk) #filtering object according to the movie we want
 
+
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ReviewCreateThrottle]
     
     def get_queryset(self):
         return Review.objects.all()
@@ -99,7 +116,11 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [ReviewUserOrReadOnly]
-
+    # custom throttle for individual class to restrict specific parts of api
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'review-detail'
+    
+    
 
 # # Mixins - helps provide basic view behaviors without defining them in detail. We define a queryset along with the method we need.
 
@@ -165,6 +186,8 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
         
                 
 class WatchlistAV(APIView):
+    permission_classes = [AdminOrReadOnly]
+    
     def get(self, request): #pass in request as the 2nd parameter in CBV
         medialist = Watchlist.objects.all() #get all medias
         #create a variable ex; serialiser to store all the data about the ex; medias and pass medias as complex data into the serializer class 
@@ -186,6 +209,8 @@ class WatchlistAV(APIView):
 
 
 class WatchlistDetail(APIView):
+    permission_classes = [AdminOrReadOnly]
+    
     def get(self, request, pk):
         try:
             media = Watchlist.objects.get(pk=pk) #passing pk=pk as we are getting a specific item

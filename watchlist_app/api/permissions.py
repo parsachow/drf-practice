@@ -22,4 +22,4 @@ class ReviewUserOrReadOnly(permissions.BasePermission):
         
         #check permissions for post/put/delete request
         else:
-            return obj.review_user == request.user #checking to see if the person who wrote the review is the current logged in user
+            return obj.review_user == request.user or request.user.is_staff #checking to see if the person who wrote the review is the current logged in user or admin
