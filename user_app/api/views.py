@@ -38,4 +38,4 @@ def registration(request):
             data = serializer.errors
         
         #return response 'data' with all the saved information from above 
-        return Response(data)
+        return Response(data, status=status.HTTP_201_CREATED)
