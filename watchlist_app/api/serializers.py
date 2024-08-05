@@ -17,7 +17,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class WatchlistSerializer(serializers.ModelSerializer):
   #Nested serializer. field name needs to match related_name in models
-  reviews = ReviewSerializer(many=True, read_only=True)
+  # reviews = ReviewSerializer(many=True, read_only=True)
+  platform = serializers.CharField(source='platform.name') #overriding platform field which was showing us ID to show name of platform instead
+  
   
   class Meta:
     model = Watchlist

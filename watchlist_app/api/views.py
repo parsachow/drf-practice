@@ -19,6 +19,7 @@ from watchlist_app.api.permissions import AdminOrReadOnly, ReviewUserOrReadOnly
 from watchlist_app.models import Watchlist, StreamPlatform, Review
 from watchlist_app.api.serializers import WatchlistSerializer, StreamPlatformSerializer, ReviewSerializer
 from watchlist_app.api.throtlling import ReviewCreateThrottle, ReviewListThrottle
+from watchlist_app.api.pagination import WatchlistPagination
 
 
 # # Create your views here.
@@ -192,19 +193,23 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
 #     def delete(self, request, pk):
 #         platform = StreamPlatform.objects.get(pk=pk)
 #         platform.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
+#         return Response(status=status.HTTP_204_NO_CONTENT) 
         
                 
 class WatchListFilterTest(generics.ListAPIView):
     queryset = Watchlist.objects.all()
-    
     serializer_class = WatchlistSerializer
+    pagination_class = WatchlistPagination
     
     # filter_backends = [DjangoFilterBackend] #good for working with specific values like rating, exact matches only as using params
     # filterset_fields = ['title', 'platform__name']
     
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [filters.SearchFilter] #search filter will provide ALL results with info entered into search bar
     search_fields = ['title', 'platform__name'] 
+
+
+    # filter_backends = [filters.OrderingFilter] #order by ascending/descending 
+    # ordering_fields = ['title', 'avg_rating'] 
 
                 
 class WatchlistAV(APIView):

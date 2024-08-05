@@ -151,5 +151,10 @@ REST_FRAMEWORK = {
         'review-create': '5/day',
         'review-list': '10/day',
         'review-detail': '2/day'
-    }
+    },
+    
+    # to get response as JSON, use global setting below. It will override django's browseable api.
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #     'rest_framework.renderers.JSONRenderer',
+    # ),
 }

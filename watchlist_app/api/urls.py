@@ -13,7 +13,7 @@ urlpatterns = [
     
     path('list/', WatchlistAV.as_view(), name='media-list'),
     path('<int:pk>/', WatchlistDetail.as_view(), name='media-detail'),
-    path('searchlist/', WatchListFilterTest.as_view(), name='watch-list'),
+    path('filterlist/', WatchListFilterTest.as_view(), name='watch-list'),
     
     
     #for simple 'get' requests for all/individual objects we can use router and viewsets and it will get/create List as well as get individual element
