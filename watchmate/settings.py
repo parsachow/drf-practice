@@ -146,11 +146,11 @@ REST_FRAMEWORK = {
     
     #throttles are counted ALL together
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '5/day',
-        'user': '10/day',
-        'review-create': '5/day',
-        'review-list': '10/day',
-        'review-detail': '2/day'
+        'anon': '10/day',
+        'user': '50/day',
+        'review-create': '10/day',
+        'review-list': '100/day',
+        'review-detail': '10/day'
     },
     
     # to get response as JSON, use global setting below. It will override django's browseable api.
