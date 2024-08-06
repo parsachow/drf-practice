@@ -181,6 +181,13 @@ class ReviewTestCase(APITestCase):
         response = self.client.get(reverse('review-detail', args=(self.review.id,))) 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
+    
     def test_review_delete(self):
         response = self.client.delete(reverse('review-detail', args=(self.review.id,)))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    
+    
+    def test_review_user(self):
+        response = self.client.get('/media/reviews/?username' + self.user.username)
+        # we can ALSO use URL pattern instead of using reverse()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
